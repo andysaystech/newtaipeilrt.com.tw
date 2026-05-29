@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>新北輕軌即時時刻</title>
+<title>Andy新北輕軌即時時刻</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a6fc9'/%3E%3Cpath fill='%23fff' d='M8 10h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-1.2l-1.4 2.2a1 1 0 0 1-.8.4H11.4a1 1 0 0 1-.8-.4L9.2 22H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zm0 2v6h16v-6H8zm2.6 8.2.6 1h11.6l.6-1H10.6z'/%3E%3Ccircle cx='11' cy='19' r='1.2' fill='%230a8f4e'/%3E%3Ccircle cx='21' cy='19' r='1.2' fill='%230a8f4e'/%3E%3Cpath stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none' d='M6 24h20'/%3E%3C/svg%3E" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
@@ -156,7 +156,7 @@
 <body>
 <div class="wrap">
   <div class="topbar">
-    <h1>🚈 新北輕軌即時時刻</h1>
+    <h1>🚈 Andy新北輕軌即時時刻</h1>
     <div class="top-actions">
       <span class="ver" title="時刻表版本">20260529</span>
       <button type="button" class="theme-btn" id="themeBtn" aria-label="切換淺色模式" title="切換淺色/深色">☀️</button>
@@ -222,6 +222,18 @@ const FISHER_TERM = new Set(['V26','V27','V28']);
 /** V01–V09：月台色標——綠=崁頂線、藍=漁人碼頭線 */
 const TRUNK_DYNAMIC = new Set(['V01','V02','V03','V04','V05','V06','V07','V08','V09']);
 const BRANCH_LABEL = { kanding: '崁頂線', fisher: '漁人碼頭線' };
+/** 方向按鈕顯示順序（值為 getDirections 的索引）；預設 dirIdx 仍為 0 */
+const DIR_BTN_ORDER = {
+  V10: [1, 0],  // 紅樹林、崁頂（預設崁頂）
+  V27: [1, 0],  // 紅樹林、淡水漁人碼頭（預設淡水漁人碼頭）
+  V28: [1, 0],
+};
+
+function directionButtonOrder(st, dirs) {
+  const order = DIR_BTN_ORDER[st?.code];
+  if (!order) return dirs.map((_, i) => i);
+  return order.filter(i => i < dirs.length);
+}
 
 function destBranch(to) {
   return /崁頂/.test(String(to || '')) ? 'kanding' : 'fisher';
@@ -490,8 +502,9 @@ function buildDirSeg() {
   }
   row.hidden = false;
   if (state.dirIdx >= dirs.length) state.dirIdx = 0;
-  seg.innerHTML = dirs.map((d, i) =>
-    `<button type="button" data-i="${i}" class="${i === state.dirIdx ? 'on' : ''}">${dirBtnLabel(d)}</button>`
+  const btnOrder = directionButtonOrder(st, dirs);
+  seg.innerHTML = btnOrder.map(i =>
+    `<button type="button" data-i="${i}" class="${i === state.dirIdx ? 'on' : ''}">${dirBtnLabel(dirs[i])}</button>`
   ).join('');
 }
 
